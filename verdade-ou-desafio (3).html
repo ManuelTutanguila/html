@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>EXTREMO</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700;900&display=swap');
+:root{--bg:#0a0a0a;--card:#111;--accent:#ff2d55;--accent2:#ff6b00;--text:#fff;--muted:#777;--border:#222;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;min-height:100vh;overflow-x:hidden;user-select:none;}
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+
+/* TOP BAR */
+.topbar{width:100%;max-width:480px;display:flex;align-items:center;padding:16px 20px 0;gap:12px;flex-shrink:0;}
+.back-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.back-btn:active{background:#1a1a1a;}
+.topbar-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:3px;color:var(--muted);}
+
+.scroll-area{width:100%;max-width:480px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px 120px;flex:1;}
+.app-title{font-family:'Bebas Neue',cursive;font-size:52px;letter-spacing:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:2px;}
+.app-sub{font-size:10px;letter-spacing:4px;color:var(--muted);text-align:center;margin-bottom:28px;text-transform:uppercase;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;width:100%;margin-bottom:14px;}
+.card-title{font-size:10px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:14px;font-weight:700;}
+input[type=text],select,textarea{width:100%;background:#1a1a1a;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:13px 15px;font-family:'Montserrat',sans-serif;font-size:14px;outline:none;margin-bottom:10px;-webkit-appearance:none;transition:border-color .2s;}
+input[type=text]:focus,select:focus,textarea:focus{border-color:var(--accent);}
+select option{background:#1a1a1a;}
+textarea{resize:none;height:90px;margin-bottom:10px;}
+.btn{width:100%;padding:15px;border:none;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;margin-bottom:8px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.btn-primary:active{opacity:.85;transform:scale(.97);}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-secondary:active{border-color:var(--accent);color:var(--accent);}
+.btn-ghost{background:#1a1a1a;color:var(--text);font-size:12px;padding:11px;}
+.btn:disabled{opacity:.3;pointer-events:none;}
+.player-tag{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-radius:10px;margin-bottom:8px;font-size:13px;font-weight:600;}
+.player-tag .rm{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
+.toggle-label{font-size:13px;font-weight:700;}
+.toggle-desc{font-size:11px;color:var(--muted);margin-top:3px;}
+.toggle{position:relative;width:46px;height:25px;background:#333;border-radius:13px;cursor:pointer;transition:background .3s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;width:19px;height:19px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .3s;}
+.toggle.on::after{left:24px;}
+.pair-card{background:#1a1a1a;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.pair-name{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#0a0a0a;color:var(--muted);transition:all .2s;}
+.chip.on{border-color:var(--accent);color:#fff;background:rgba(255,45,85,.15);}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.97);border-top:1px solid var(--border);padding:12px 20px;z-index:200;display:flex;gap:8px;}
+.custom-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.rm-c{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;margin-left:auto;padding:0 4px;}
+
+/* GAME */
+#gameScreen{background:radial-gradient(ellipse at center,#1a080e 0%,#0a0a0a 70%);}
+.game-wrap{width:100%;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;touch-action:manipulation;}
+.strip-wrap{width:100%;overflow:hidden;height:52px;margin-bottom:26px;}
+.strip{display:flex;gap:10px;white-space:nowrap;will-change:transform;}
+.spin-chip{display:inline-flex;align-items:center;padding:9px 18px;border-radius:30px;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.circle-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(255,45,85,.2);animation:rp 2s ease-out infinite;pointer-events:none;}
+.ring:nth-child(1){width:238px;height:238px;animation-delay:0s;}
+.ring:nth-child(2){width:268px;height:268px;animation-delay:.5s;}
+.ring:nth-child(3){width:298px;height:298px;animation-delay:1s;}
+@keyframes rp{0%{opacity:.5;transform:scale(1);}100%{opacity:0;transform:scale(1.04);}}
+.main-circle{width:218px;height:218px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;background:radial-gradient(circle at 35% 35%,#2a0810,#0a0a0a);box-shadow:0 0 0 2px var(--accent),0 0 40px rgba(255,45,85,.3),0 0 80px rgba(255,45,85,.1);transition:box-shadow .3s;position:relative;z-index:10;touch-action:manipulation;}
+.main-circle:active{box-shadow:0 0 0 2px var(--accent),0 0 70px rgba(255,45,85,.6);}
+.main-circle.spinning{box-shadow:0 0 0 2px var(--accent2),0 0 60px rgba(255,107,0,.5);}
+.circle-label{font-family:'Bebas Neue',cursive;font-size:40px;letter-spacing:4px;color:#fff;text-shadow:0 0 20px rgba(255,45,85,.6);text-align:center;padding:0 10px;}
+.circle-sub{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:-2px;}
+.abs-back{position:absolute;top:20px;left:20px;width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:rgba(17,17,17,.9);color:var(--text);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;}
+
+/* RESULT */
+#resultPanel{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100vh;padding:30px 24px;position:relative;}
+#resultPanel.active{display:flex;}
+.result-name{font-family:'Bebas Neue',cursive;font-size:56px;letter-spacing:6px;animation:nr .4s ease-out;text-align:center;}
+@keyframes nr{from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);}}
+.choice-row{display:flex;width:100%;max-width:360px;gap:12px;margin-top:28px;}
+.choice-btn{flex:1;padding:20px 8px;border-radius:16px;border:none;font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:3px;cursor:pointer;transition:all .2s;}
+.choice-btn:active{transform:scale(.95);}
+.c-dare{background:linear-gradient(135deg,#ff2d55,#c0003c);color:#fff;box-shadow:0 8px 28px rgba(255,45,85,.4);}
+.c-truth{background:linear-gradient(135deg,#0070ff,#0040c0);color:#fff;box-shadow:0 8px 28px rgba(0,112,255,.4);}
+
+/* QUESTION */
+#questionScreen{background:radial-gradient(ellipse at center,#1a080e 0%,#0a0a0a 70%);}
+.q-scroll{width:100%;max-width:480px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px 140px;flex:1;}
+.q-badge{font-family:'Bebas Neue',cursive;font-size:12px;letter-spacing:4px;padding:5px 16px;border-radius:20px;display:inline-block;margin-bottom:12px;}
+.b-dare{background:rgba(255,45,85,.15);color:var(--accent);border:1px solid var(--accent);}
+.b-truth{background:rgba(0,112,255,.15);color:#4da6ff;border:1px solid #0070ff;}
+.q-pname{font-family:'Bebas Neue',cursive;font-size:38px;letter-spacing:4px;margin-bottom:16px;}
+.q-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;font-size:16px;line-height:1.65;text-align:center;font-weight:600;margin-bottom:20px;}
+.timer-box{display:none;flex-direction:column;align-items:center;margin-bottom:16px;}
+.timer-box.show{display:flex;}
+.timer-val{font-family:'Bebas Neue',cursive;font-size:70px;color:var(--accent2);letter-spacing:4px;line-height:1;}
+.timer-val.warn{color:var(--accent);animation:tp .5s ease-in-out infinite;}
+@keyframes tp{0%,100%{opacity:1;}50%{opacity:.3;}}
+.q-bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.97);border-top:1px solid var(--border);padding:12px 20px;display:flex;gap:8px;z-index:200;}
+.q-bottom .btn{flex:1;margin:0;font-size:11px;padding:13px 6px;}
+
+.pc0{background:#ff2d55;}.pc1{background:#ff6b00;}.pc2{background:#8b00ff;}.pc3{background:#00b4d8;}
+.pc4{background:#06d6a0;}.pc5{background:#ffd700;color:#000!important;}.pc6{background:#ff006e;}
+.pc7{background:#3a86ff;}.pc8{background:#fb5607;}.pc9{background:#8338ec;}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="screen active" id="setupScreen">
+  <div class="scroll-area">
+    <div class="app-title">EXTREMO</div>
+    <div class="app-sub">Verdade ou Desafio</div>
+
+    <div class="card">
+      <div class="card-title">➕ Adicionar Jogador</div>
+      <input type="text" id="pName" placeholder="Nome do jogador" maxlength="18">
+      <select id="pGender">
+        <option value="">Gênero</option>
+        <option value="M">Masculino</option>
+        <option value="F">Feminino</option>
+      </select>
+      <select id="pPref">
+        <option value="">Prefere interagir com...</option>
+        <option value="M">Homens</option>
+        <option value="F">Mulheres</option>
+        <option value="A">Ambos</option>
+      </select>
+      <button class="btn btn-primary" id="addBtn" disabled onclick="addPlayer()">ADICIONAR</button>
+    </div>
+
+    <div id="playersList"></div>
+
+    <div class="card" id="targetCard" style="display:none;">
+      <div class="card-title">🎯 Modo Alvo</div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Escolher com quem interagir</div>
+          <div class="toggle-desc">Cada jogador escolhe os seus alvos</div>
+        </div>
+        <div class="toggle" id="targetToggle" onclick="toggleTarget()"></div>
+      </div>
+      <div id="pairsSection" style="display:none;margin-top:14px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px;">Seleciona com quem cada jogador quer fazer os desafios:</div>
+        <div id="pairsContainer"></div>
+      </div>
+    </div>
+
+    <div class="card" id="customCard" style="display:none;">
+      <div class="card-title">✏️ Minhas Perguntas</div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Adicionar perguntas próprias</div>
+          <div class="toggle-desc">Cria as tuas próprias verdades e desafios</div>
+        </div>
+        <div class="toggle" id="customToggle" onclick="toggleCustom()"></div>
+      </div>
+      <div id="customSection" style="display:none;margin-top:14px;">
+        <!-- MODO DE JOGO -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;font-weight:700;">🎮 Jogar com quais perguntas?</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:#1a1a1a;border-radius:10px;border:1px solid var(--border);" id="modeAll">
+              <input type="radio" name="qmode" value="all" checked style="accent-color:var(--accent);width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:600;">Todas misturadas</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:#1a1a1a;border-radius:10px;border:1px solid var(--border);" id="modeMine">
+              <input type="radio" name="qmode" value="mine" style="accent-color:var(--accent);width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:600;">Só as minhas</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;background:#1a1a1a;border-radius:10px;border:1px solid var(--border);" id="modeBank">
+              <input type="radio" name="qmode" value="bank" style="accent-color:var(--accent);width:16px;height:16px;">
+              <span style="font-size:13px;font-weight:600;">Só as do banco</span>
+            </label>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border);margin-bottom:14px;"></div>
+        <div style="font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;font-weight:700;">➕ Adicionar Pergunta</div>
+        <select id="customType"><option value="truth">Verdade</option><option value="dare">Desafio</option></select>
+        <textarea id="customText" placeholder="Escreve aqui a tua pergunta ou desafio..."></textarea>
+        <select id="customTimer">
+          <option value="0">Sem cronômetro</option>
+          <option value="15">15 segundos</option>
+          <option value="30">30 segundos</option>
+          <option value="45">45 segundos</option>
+          <option value="60">1 minuto</option>
+          <option value="90">1 min 30</option>
+          <option value="120">2 minutos</option>
+        </select>
+        <button class="btn btn-ghost" onclick="addCustomQ()">+ ADICIONAR</button>
+        <div id="customList" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div style="height:90px;"></div>
+  </div>
+  <div class="bottom-bar" id="startBar" style="display:none;">
+    <button class="btn btn-primary" onclick="startGame()" style="flex:2;margin:0;">🔥 COMEÇAR O JOGO</button>
+    <button class="btn btn-secondary" onclick="resetAll()" style="flex:1;margin:0;font-size:11px;">🗑️ ZERAR</button>
+  </div>
+</div>
+
+<!-- GAME / SPIN -->
+<div class="screen" id="gameScreen">
+  <!-- Spin view -->
+  <div class="game-wrap" id="spinView">
+    <button class="abs-back" onclick="goSetup()">←</button>
+    <div class="strip-wrap"><div class="strip" id="strip"></div></div>
+    <div class="circle-wrap">
+      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+      <div class="main-circle" id="mainCircle">
+        <div class="circle-label" id="circleLabel">JOGAR</div>
+        <div class="circle-sub" id="circleSub">toca para girar</div>
+      </div>
+    </div>
+    <div style="margin-top:28px;font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Toca no círculo para girar</div>
+  </div>
+
+  <!-- Result view -->
+  <div id="resultPanel">
+    <button class="abs-back" onclick="goSpin()">←</button>
+    <div style="font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:20px;">É a vez de</div>
+    <div class="result-name" id="resultName"></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;">O que escolhes?</div>
+    <div class="choice-row">
+      <button class="choice-btn c-dare" onclick="choose('dare')">DESAFIO</button>
+      <button class="choice-btn c-truth" onclick="choose('truth')">VERDADE</button>
+    </div>
+    <button class="btn btn-secondary" onclick="spin()" style="margin-top:22px;max-width:360px;">↩ GIRAR NOVAMENTE</button>
+  </div>
+</div>
+
+<!-- QUESTION -->
+<div class="screen" id="questionScreen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goResult()">←</button>
+    <div class="topbar-title" id="qTopTitle">DESAFIO</div>
+  </div>
+  <div class="q-scroll">
+    <div style="margin-bottom:10px;"><span class="q-badge" id="qBadge"></span></div>
+    <div class="q-pname" id="qPname"></div>
+    <div class="q-box" id="qBox"></div>
+    <div class="timer-box" id="timerBox">
+      <div class="timer-val" id="timerVal">0:00</div>
+      <button class="btn btn-ghost" id="timerBtn" onclick="startTimer()" style="width:auto;padding:10px 24px;margin-top:8px;font-size:12px;">▶ INICIAR CRONÔMETRO</button>
+    </div>
+    <div style="height:80px;"></div>
+  </div>
+  <div class="q-bottom">
+    <button class="btn btn-primary" onclick="done()">✅ CONCLUÍDO</button>
+    <button class="btn btn-secondary" onclick="change()">🔄 MUDAR</button>
+    <button class="btn btn-ghost" onclick="goSpin()">⟳ NOVO GIRO</button>
+  </div>
+</div>
+
+<script>
+const COLORS=['pc0','pc1','pc2','pc3','pc4','pc5','pc6','pc7','pc8','pc9'];
+const CHEX={pc0:'#ff2d55',pc1:'#ff6b00',pc2:'#8b00ff',pc3:'#00b4d8',pc4:'#06d6a0',pc5:'#ffd700',pc6:'#ff006e',pc7:'#3a86ff',pc8:'#fb5607',pc9:'#8338ec'};
+
+let players=[],targetMode=false,customMode=false;
+let currentPlayer=null,lastPlayer=null,currentType=null;
+let timerInt=null,timerSecs=0,spinAnim=null;
+let customQs={truth:[],dare:[]};
+
+const TRUTHS=[
+  "Já pensaste em {alvo} de forma proibida?",
+  "Qual parte do corpo de {alvo} mais te chama atenção?",
+  "Já imaginaste beijar {alvo}? Como seria?",
+  "Qual seria o lugar perfeito para beijar {alvo}?",
+  "Já sonhaste com {alvo}? Conta como foi.",
+  "O que farias com {alvo} se estivessem sozinhos agora?",
+  "Qual foi a coisa mais ousada que já fizeste com alguém?",
+  "Já mandaste mensagem picante para alguém? O que dizia?",
+  "Gostas de dominar ou ser dominado(a)?",
+  "Qual é o teu maior ponto fraco quando alguém te toca?",
+  "Já tiveste vontade de beijar {alvo} de surpresa?",
+  "O que mais te deixa com vontade em {alvo}?",
+  "Já ficaste com mais de uma pessoa no mesmo dia?",
+  "Qual foi o beijo mais inesquecível da tua vida?",
+  "Já sentiste atração por {alvo} antes de admitir?",
+  "O que mais te excita: olhar, toque ou palavras?",
+  "Já ficaste com alguém só pela química física?",
+  "Preferes beijo lento ou intenso?",
+  "Já pensaste em provocar {alvo} de propósito?",
+  "Já namorou? Quantas vezes?",
+  "Já recebeste uma cantada que te deixou sem jeito? Qual foi?",
+  "Já fez sexo? Gostou? Conta.",
+  "Se fosse transar com uma celebridade, quem seria?",
+  "Como terminarias um relacionamento?",
+  "Já traíste alguém? Conta a história.",
+  "Qual a fantasia que nunca contaste a ninguém?",
+  "O que farias se {alvo} te mandasse uma mensagem às 3 da manhã?",
+  "Já fizeste algo íntimo num lugar público? Conta.",
+  "Qual foi a situação mais provocante em que já estiveste?",
+  "Já mandaste foto ou vídeo íntimo para alguém?",
+  "O que mais gostas que te façam quando estás a ser tocado(a)?",
+  "Qual a parte do teu corpo da qual mais te orgulhas?",
+  "Já beijaste alguém que não devias? Quem?",
+  "Se pudesses passar uma noite com qualquer pessoa desta sala, quem seria?",
+  "Já tiveste uma fantasia com {alvo}?",
+  "O que farias se ficasses sozinho(a) com {alvo} numa casa por uma semana?",
+  "Qual é a coisa mais provocante que já disseste a alguém?",
+  "Qual a posição que mais gostas ou tens curiosidade de experimentar?",
+  "Qual foi o teu maior arrependimento numa relação íntima?",
+  "Se tivesses que escolher alguém desta sala para um encontro, quem seria?",
+  "Qual a mensagem mais picante que já enviaste ou recebeste?",
+  "Já fizeste algo com alguém que nunca contaste a ninguém?",
+  "Qual a fantasia que mais gostas de pensar antes de adormecer?",
+  "O que faria {alvo} para te conquistar completamente?",
+  "Já te flagraram fazendo algo íntimo? Conta como foi.",
+  "Já sentiste ciúme de {alvo}? Em que situação?",
+  "O que pensas de {alvo} quando o(a) vês sorrir?",
+  "Qual foi o momento mais quente que já viveste com alguém?",
+  "Se pudesses fazer uma coisa proibida sem consequências, o que farias?",
+  "Já fizeste striptease para alguém? Como foi? [F]",
+  "Qual foi a primeira vez que sentiste atração por alguém desta sala?",
+  "O que achas mais atraente em {alvo}: o sorriso, os olhos ou o corpo?",
+  "Já perdeste o controlo com alguém por estar tão excitado(a)?",
+  "O que farias se {alvo} te pedisse para passar a noite juntos?",
+  "Qual a coisa mais audaciosa que já fizeste na cama?",
+  "Se tivesses 5 minutos a sós com {alvo} agora, o que farias?",
+  "Qual foi a vez que mais desejaste alguém e não fizeste nada?",
+  "O que te faria perder completamente o controlo com {alvo}?",
+  "Já imaginaste como seria acordar ao lado de {alvo}?",
+  "Qual a roupa que achas mais sedutora em {alvo}?",
+  "O que pensas quando {alvo} está muito perto de ti?",
+  "Já fingiste não gostar de alguém para esconder o quanto o(a) desejavas?",
+  "Qual foi a vez que mais te custou resistir a alguém?",
+  "Se {alvo} te pedisse um beijo agora, darias?",
+  "O que te faz perder o fôlego quando alguém te toca?",
+  "Qual foi a situação em que mais te sentiste desejado(a)?",
+  "Já te arrependeste de não ter ido mais longe com alguém?",
+  "O que achas que {alvo} pensa de ti neste momento?",
+  "Qual a coisa mais provocante que {alvo} já te fez sem perceber?",
+  "Já enviaste uma mensagem para a pessoa errada? O que dizia?",
+  "Qual foi o encontro mais quente da tua vida?",
+  "Se pudesses repetir uma noite com alguém, qual seria?",
+  "Qual a tua zona do corpo mais sensível ao toque?",
+  "O que mais gostas que sussurrem ao teu ouvido?",
+  "Já ficaste a pensar em {alvo} depois de um encontro? Porquê?",
+  "O que farias se encontrasses {alvo} completamente sozinhos num quarto?",
+  "Qual a hora do dia em que te sentes mais provocante?",
+  "O que te faz ter mais desejo: palavras, olhares ou toques?",
+  "Já ficaste completamente louco(a) por alguém só pelo perfume?",
+  "Se tivesses que conquistar {alvo} em 1 minuto, como farias?",
+  "Qual foi a coisa mais ousada que já disseste a alguém que gostas?",
+  "Já revelaste um segredo íntimo a alguém que não devias?",
+  "O que farias para surpreender {alvo} num encontro?",
+  "Já te apaixonaste por alguém que não estava disponível?",
+  "Qual o gesto mais pequeno que {alvo} pode fazer e que te deixa completamente derretido(a)?",
+  "O que te fez sentir mais desejado(a) em toda a tua vida?",
+  "Já tiveste dificuldade em esconder o quanto {alvo} te atrai?",
+  "Qual foi a mensagem mais ousada que já enviaste às 3 da manhã?",
+  "O que mais gostas de fazer depois de um encontro intenso?",
+  "Já te arrependeste de não ter beijado alguém quando tiveste a oportunidade?",
+  "Qual a coisa mais íntima que já fizeste num carro?",
+  "O que te faz perder completamente a cabeça quando estás com alguém?",
+  "Se {alvo} te pedisse para sair hoje à noite, dirias que sim?",
+  "O que farias se acordasses amanhã ao lado de {alvo}?",
+  "Já tiveste um encontro tão intenso que ficaste sem conseguir falar?",
+  "Qual a coisa mais provocante que já usaste para conquistar alguém?",
+  "O que mais te atrai em {alvo} que não consegues admitir?",
+  "Já ficaste com alguém que já estava comprometido(a)? Conta.",
+  "O que {alvo} teria que fazer para te conquistar completamente?",
+  "Já usaste a tua voz para seduzir alguém? Como foi?",
+  "O que te faz ter mais vontade: a conversa ou o silêncio entre vocês?",
+  "Qual a coisa mais quente que já viveste numa festa?",
+  "Qual o momento desta noite em que mais tiveste vontade de {alvo}?",
+  "O que mais te excitou nos últimos 30 dias?",
+  "Qual é a coisa que nunca fizeste na cama mas morres de vontade de experimentar?",
+  "Já ficaste excitado(a) num momento completamente inapropriado? Conta.",
+  "Qual a parte do corpo de {alvo} que mais te tira o fôlego?",
+  "O que te faria dizer sim a {alvo} sem hesitar?",
+  "Qual foi a conversa mais picante que já tiveste com alguém?",
+  "O que farias com {alvo} se tivessem 24 horas completamente sozinhos?",
+  "Já perdeste o sono por estar a pensar em alguém? Quem era?",
+  "O que achas que {alvo} pensa quando te vê entrar numa sala?",
+  "O que faria {alvo} para te deixar sem palavras?",
+  "Qual foi a noite mais memorável da tua vida? O que aconteceu?",
+  "Já tiveste uma relação secreta com alguém? Conta como foi.",
+  "Já tiveste vontade de parar tudo e beijar alguém desta sala?",
+  "Qual foi a tua maior loucura por amor ou desejo?",
+  "O que {alvo} poderia dizer agora que te deixaria completamente sem reação?",
+  "Já te perdeste completamente nos olhos de alguém? Quem era?",
+  "Qual a coisa mais provocante que já fizeste para chamar a atenção de alguém?",
+  "Já admitiste a alguém que o(a) desejaste antes de conhecer bem? Como foi?",
+  "O que mais gostas que façam contigo depois de um momento de tensão?",
+  "Já tiveste que fingir indiferença quando {alvo} estava perto?",
+  "O que te faria aproximar de {alvo} sem hesitar esta noite?",
+  "O que te faria ir mais longe do que planeavas com {alvo}?",
+  "Qual foi o teu maior erro numa relação íntima?",
+  "Se tivesses que sussurrar uma coisa ao ouvido de {alvo} agora, o que seria?",
+  "Qual é o teu maior desejo secreto neste momento?",
+  "O que {alvo} tem que te deixa sem conseguir parar de olhar?",
+  "O que mais gostas de fazer quando estás completamente à vontade com alguém?",
+  "Já perdeste completamente a cabeça por alguém desta sala?",
+  "O que farias se {alvo} te mandasse uma mensagem quente esta noite?",
+  "O que te faz estar completamente presente num momento íntimo com alguém?",
+  "Se {alvo} te pedisse para ficar depois de toda a gente sair, o que dirias?",
+  "Qual foi a situação em que mais te custou esconder o que sentias por alguém?",
+  "O que te faz sentir mais desejado(a) por {alvo}?",
+  "O que {alvo} poderia fazer agora que te deixaria completamente louco(a)?",
+  "Já admitiste a alguém que o(a) observas mais do que devias?",
+  "Qual a coisa mais ousada que já fizeste com alguém desta sala?",
+  "O que achas que seria a coisa mais intensa que poderias fazer com {alvo}?",
+  "Se tivesses que suspirar agora pensando em {alvo}, porquê seria?",
+  "O que farias se {alvo} chegasse até ti agora e te pedisse um beijo?",
+  "Qual a coisa mais quente que já disseste numa conversa de texto?",
+  "O que mais gostas no momento antes de beijar alguém pela primeira vez?",
+  "Qual foi o teu momento mais corajoso numa conquista?",
+  "Já te apanharam a fantasiar com alguém desta sala?",
+  "Se pudesses escolher um superpoder de sedução, qual seria?",
+  "O que te faz sentir mais confiante quando estás com alguém que te atrai?",
+  "Já tiveste um encontro que mudou completamente a forma como vês as relações?",
+  "Qual é o teu maior medo num momento íntimo com alguém novo?",
+  "Qual foi a noite em que mais sentiste que algo podia acontecer entre ti e {alvo}?",
+];
+
+const DARES=[
+  "Morde o teu lábio inferior e mantém por 10 segundos olhando para {alvo}.|10",
+  "Chega bem perto de {alvo} e sussurra algo provocante no ouvido.|0",
+  "Faz um olhar sedutor para {alvo} por 15 segundos sem rir.|15",
+  "Encosta o teu rosto no rosto de {alvo} e fica assim por 10 segundos.|10",
+  "Imita como beijarias {alvo}. Mostra com detalhes.|0",
+  "Diz ou faz algo que deixe {alvo} completamente sem reação.|0",
+  "Chega bem perto de {alvo}… e para mesmo antes de beijar. Aguenta assim por 10 segundos.|10",
+  "Elogia {alvo} da forma mais provocante possível.|0",
+  "Finge que estás num encontro romântico com {alvo}. Dura 1 minuto.|60",
+  "Encosta a tua mão na mão de {alvo} e segura por 20 segundos.|20",
+  "Faz um elogio a {alvo} olhando diretamente nos olhos durante 15 segundos.|15",
+  "Sussurra algo que só {alvo} pode ouvir.|0",
+  "Morde levemente o próprio lábio enquanto encaras {alvo} por 15 segundos.|15",
+  "Diz a {alvo} o que farias se ninguém estivesse a ver.|0",
+  "Chega bem perto do pescoço de {alvo} e beija durante 30 segundos.|30",
+  "Diz qual parte do corpo de {alvo} beijarias primeiro e porquê.|0",
+  "Faz uma cara de desejo para {alvo} por 20 segundos.|20",
+  "Provoca {alvo} por 15 segundos sem falar nada, apenas tocando suavemente.|15",
+  "Faz carinho devagar na barriga de {alvo} por 30 segundos.|30",
+  "Beija {alvo} na boca por 30 segundos.|30",
+  "Dance Tarrachinha com {alvo} por 45 segundos.|45",
+  "Fica abraçado(a) com {alvo} por 45 segundos.|45",
+  "Dá um beijo delicado na cintura de {alvo}.|0",
+  "Coloca a tua mão nas coxas de {alvo} e faz carinho por 40 segundos.|40",
+  "Escreve 'te quero' nas costas de {alvo} com o dedo.|0",
+  "Dá duas cantadas em {alvo}. Se ele(a) sorrir, dá um beijo.|0",
+  "Usa todas as tuas armas para seduzir {alvo} por 1 minuto. Se ele(a) gostar, dá um beijo.|60",
+  "Olha fixamente nos olhos de {alvo} e diz a coisa mais extrema que gostarias de fazer com ele(a).|0",
+  "Faz flexões com {alvo} nas costas por 15 segundos. [M]|15",
+  "Geme bem baixinho no ouvido de {alvo}. [F]|0",
+  "Baixa devagar até ao chão na frente de {alvo} e volta. Mantém o contacto visual. [F]|0",
+  "Beija a barriga de {alvo} por 30 segundos.|30",
+  "Deixa {alvo} te dar palmadas por 30 segundos.|30",
+  "Deita no chão e {alvo} esfrega-se sensualmente por cima de ti durante 30 segundos.|30",
+  "Encosta-te à parede. {alvo} vem te encurralar e sussurra os seus desejos ao teu ouvido. 45 segundos.|45",
+  "Senta-te numa cadeira. {alvo} venda os teus olhos e brinca com o teu corpo durante 2 minutos.|120",
+  "Cita três posições de casal. {alvo} escolhe uma. Façam os movimentos juntos agora. 2 minutos.|120",
+  "Coloca açúcar em pó à volta do umbigo. {alvo} lambe tudo e desce lentamente. 1 minuto.|60",
+  "Escolhe a parte do corpo de {alvo} que achas mais gostosa e faz uma pedra de gelo derreter em cima. 45 segundos.|45",
+  "Dá muito prazer a {alvo} mas mantém as mãos atrás das costas. Só com o que mais tens. 1 minuto e 30 segundos.|90",
+  "Monta em {alvo}. Ele(a) deverá responder à próxima pergunta sem interromper este desafio.|0",
+  "Fica de cócoras à frente de {alvo} e olha para ele(a) nos olhos por 20 segundos. [F]|20",
+  "Acaricia o rosto de {alvo} com a tua mão por 30 segundos.|30",
+  "Empurra {alvo} de costas à parede e esfrega a tua mão nele(a). {alvo} deve resistir à vontade de tocar em ti durante 30 segundos.|30",
+  "{alvo} escolhe ficar por cima ou por baixo de ti durante 1 minuto. O primeiro a ceder perde.|60",
+  "Faz uma massagem nos ombros de {alvo} durante 1 minuto.|60",
+  "Beija {alvo} no pescoço por 20 segundos.|20",
+  "Fica de frente para {alvo} a 5 cm de distância por 30 segundos sem tocar e sem rir.|30",
+  "Sussurra o nome de {alvo} três vezes de formas diferentes: com desejo, carinhosamente, e de forma provocante.|0",
+  "Passa os teus dedos devagar pelo pescoço de {alvo} por 20 segundos.|20",
+  "Olha nos olhos de {alvo} e diz-lhe sem parar o que mais gostas nele(a). 30 segundos.|30",
+  "Dança de forma sensual para {alvo} durante 45 segundos.|45",
+  "Faz carinho no cabelo de {alvo} por 30 segundos.|30",
+  "Encosta a tua cabeça no ombro de {alvo} e fica assim por 1 minuto.|60",
+  "Sussurra ao ouvido de {alvo} a coisa mais quente que já pensaste sobre ele(a).|0",
+  "Faz carinho devagar no braço de {alvo} dos dedos até ao ombro. 30 segundos.|30",
+  "Senta-te de costas para {alvo} e deixa-o(a) fazer-te uma massagem na nuca por 45 segundos.|45",
+  "Imita como acordarias ao lado de {alvo}. Com detalhes.|0",
+  "Diz a {alvo} o que mais te atrai nele(a) sem usar palavras. Só gestos. 30 segundos.|30",
+  "Anda de um lado para o outro da sala da forma mais sedutora que consegues. {alvo} avalia.|0",
+  "Pede a {alvo} para fazer uma coisa que tu gostarias que te fizesse. Ele(a) faz agora.|0",
+  "Encosta os lábios no ouvido de {alvo} e conta até 10 devagar.|0",
+  "Dança com {alvo} de olhos fechados por 1 minuto.|60",
+  "Faz carinho na face de {alvo} durante 30 segundos olhando nos olhos.|30",
+  "Conta a {alvo} um sonho que tiveste com ele(a), real ou inventado. Com detalhes.|0",
+  "Faz de conta que vês {alvo} pela primeira vez e vai conquistá-lo(a) em 1 minuto.|60",
+  "Aproxima-te de {alvo} devagar, para à distância de um beijo, e recua. Repete 3 vezes.|0",
+  "Beija {alvo} na testa, depois na bochecha, depois no pescoço. Devagar.|0",
+  "Segura a mão de {alvo} e descreve em voz alta o que estás a sentir. 30 segundos.|30",
+  "Faz um monólogo de 1 minuto sobre o que farias numa noite com {alvo}.|60",
+  "Olha nos olhos de {alvo} e não fales. O primeiro a desviar o olhar perde. Máximo 2 minutos.|120",
+  "Pede a {alvo} que feche os olhos. Toca em 3 partes do corpo dele(a) com o dedo. Ele(a) tem que adivinhar.|0",
+  "Diz a {alvo} o que farias se estivessem sozinhos numa ilha deserta.|0",
+  "Vai até {alvo} e faz o teu melhor sorriso sedutor. Se ele(a) sorrir de volta, ganhas um beijo.|0",
+  "Faz carinho nas costas de {alvo} por 45 segundos.|45",
+  "Fica 1 minuto abraçado(a) a {alvo} de olhos fechados.|60",
+  "Faz de {alvo} o teu travesseiro durante 2 minutos. Como quiseres.|120",
+  "Imita como acordarias {alvo} com beijos. Com detalhes. 30 segundos.|30",
+  "Diz a {alvo} três coisas que nunca contaste mas que agora és obrigado(a) a dizer.|0",
+  "Encosta a tua cabeça no colo de {alvo} e fica assim por 1 minuto.|60",
+  "Faz carinho nos joelhos de {alvo} durante 30 segundos.|30",
+  "Canta uma música sensual para {alvo} olhando nos olhos.|0",
+  "Descreve em detalhes o beijo perfeito com {alvo}. Depois experimenta.|0",
+  "Faz uma fila de beijos desde o ombro até ao pescoço de {alvo}. 20 segundos.|20",
+  "Pede a {alvo} para fechar os olhos e beija-o(a) onde quiseres. Onde foi?|0",
+  "Fica 30 segundos a respirar devagar no pescoço de {alvo} sem tocar.|30",
+  "Segura o rosto de {alvo} com as duas mãos e olha-o(a) nos olhos por 20 segundos.|20",
+  "Convence {alvo} em 1 minuto a dar-te um beijo apenas com palavras. Não podes pedir diretamente.|60",
+  "Venda os olhos de {alvo} com uma peça de roupa e guia-o(a) por 30 segundos tocando suavemente.|30",
+  "Sussurra ao ouvido de {alvo} os teus três maiores desejos com ele(a).|0",
+  "Mostra a {alvo} como o(a) abraçarias se fossem namorados. 45 segundos.|45",
+  "Pede a {alvo} que fique 30 segundos com os olhos fechados. Faz o que quiseres.|30",
+  "Faz carinho nos cabelos de {alvo} e descreve em voz alta o que estás a sentir.|0",
+  "Dá a {alvo} um abraço por trás e fica assim por 30 segundos.|30",
+  "Encosta-te a {alvo} de costas durante 1 minuto sem falar.|60",
+  "Anda em volta de {alvo} fazendo carinho no ombro e diz algo quente ao ouvido.|0",
+  "Beija {alvo} atrás da orelha. Devagar.|0",
+  "Fica 20 segundos com a tua mão na cintura de {alvo} olhando nos olhos.|20",
+  "Diz a {alvo} qual o gesto dele(a) que mais te deixa louco(a).|0",
+  "Leva {alvo} pela mão até um canto da sala e conta-lhe um segredo que ninguém pode ouvir.|0",
+  "Fica de frente para {alvo} e anda lentamente à sua volta em círculo. 30 segundos.|30",
+  "Encosta os teus lábios nas costas da mão de {alvo} e mantém por 15 segundos.|15",
+  "Descreve como seria a tua noite perfeita com {alvo} nos mínimos detalhes.|0",
+  "Deixa {alvo} escolher onde te dá 3 beijos. Onde for.|0",
+  "Abraça {alvo} como se fosse a última vez que o(a) vês. 1 minuto.|60",
+  "Faz carinho nas costas de {alvo} desenhando figuras com o dedo. 45 segundos.|45",
+  "Senta-se ao lado de {alvo} e passa o próximo minuto a dizer-lhe coisas ao ouvido.|60",
+  "Beija {alvo} na nuca devagar.|0",
+  "Dá a {alvo} um beijo na bochecha e mantém por 10 segundos.|10",
+  "Faz o teu melhor esforço para fazer {alvo} corar em 30 segundos.|30",
+  "Coloca a tua mão no coração de {alvo} e sente os batimentos por 20 segundos.|20",
+  "Deixa {alvo} escolher qualquer coisa para te fazer durante 30 segundos.|30",
+  "Beija {alvo} onde quiseres abaixo do pescoço. 15 segundos.|15",
+  "Leva {alvo} pela mão, dança lentamente 30 segundos e beija-o(a) no pescoço no final.|30",
+  "Olha nos olhos de {alvo} e conta-lhe o momento em que mais o(a) desejaste.|0",
+  "Faz carinho na barriga de {alvo} lentamente. 30 segundos.|30",
+  "Fica 1 minuto sem desviar o olhar de {alvo} enquanto ele(a) faz o que quiser para te distrair.|60",
+  "Diz a {alvo} em voz alta e devagar o que sentes quando o(a) vês hoje.|0",
+  "Dá a {alvo} a tua melhor massagem nas costas por 2 minutos.|120",
+  "Fica 20 segundos a respirar no ouvido de {alvo} sem dizer nada.|20",
+  "Passa os teus lábios lentamente pelo ombro de {alvo}. 20 segundos.|20",
+  "Faz carinho nas costas de {alvo} enquanto lhe sussurras ao ouvido. 45 segundos.|45",
+  "Senta-te no colo de {alvo} e fica assim por 1 minuto.|60",
+  "Desenha com o dedo em cima da barriga de {alvo} o que gostarias de fazer com ele(a).|0",
+  "Faz uma declaração completamente dramática e exagerada para {alvo}.|0",
+  "Beija {alvo} onde ele(a) escolher. O que ele(a) disser, vais.|0",
+  "Olha fixamente para {alvo} por 1 minuto enquanto ele(a) te ignora propositadamente.|60",
+  "Sussurra ao ouvido de {alvo} algo que nunca disseste a ninguém.|0",
+  "Faz carinho nas costas de {alvo} por 1 minuto enquanto ele(a) não pode mexer as mãos.|60",
+  "Senta-te atrás de {alvo} e faz-lhe uma massagem no couro cabeludo por 1 minuto.|60",
+  "Diz a {alvo} a coisa mais ousada que alguma vez pensaste fazer com ele(a).|0",
+  "Fica 30 segundos a fazer carinho no rosto de {alvo} sem falar.|30",
+  "Dança só para {alvo} durante 1 minuto. Ele(a) não pode tocar em ti.|60",
+  "Pede a {alvo} que durma no teu ombro durante 1 minuto.|60",
+  "Faz carinho nos pés de {alvo} por 30 segundos.|30",
+  "Diz-lhe 5 coisas que adorarias fazer com {alvo} se estivessem completamente sozinhos.|0",
+];
+
+// ══════════ SETUP ══════════
+['pName','pGender','pPref'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',chk);
+  document.getElementById(id).addEventListener('change',chk);
+});
+function chk(){
+  const n=document.getElementById('pName').value.trim();
+  const g=document.getElementById('pGender').value;
+  const p=document.getElementById('pPref').value;
+  document.getElementById('addBtn').disabled=!(n&&g&&p);
+}
+
+function addPlayer(){
+  const n=document.getElementById('pName').value.trim();
+  const g=document.getElementById('pGender').value;
+  const p=document.getElementById('pPref').value;
+  if(!n||!g||!p)return;
+  players.push({name:n,gender:g,pref:p,color:COLORS[players.length%10],targets:[]});
+  document.getElementById('pName').value='';
+  document.getElementById('pGender').value='';
+  document.getElementById('pPref').value='';
+  document.getElementById('addBtn').disabled=true;
+  renderPlayers();
+  if(players.length>=2){
+    ['targetCard','customCard','startBar'].forEach(id=>document.getElementById(id).style.display='block');
+  }
+  if(targetMode)renderPairs();
+  saveData();
+}
+
+function removePlayer(i){
+  players.splice(i,1);
+  renderPlayers();
+  if(targetMode)renderPairs();
+  if(players.length<2){
+    ['targetCard','customCard','startBar'].forEach(id=>document.getElementById(id).style.display='none');
+  }
+  saveData();
+}
+
+function renderPlayers(){
+  const el=document.getElementById('playersList');
+  el.innerHTML='';
+  players.forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className=`player-tag ${p.color}`;
+    d.innerHTML=`<span style="color:#fff">${p.name} <span style="font-size:10px;opacity:.7">${p.gender==='M'?'♂':'♀'} · ${p.pref==='A'?'Ambos':p.pref==='M'?'Homens':'Mulheres'}</span></span><button class="rm" onclick="removePlayer(${i})">×</button>`;
+    el.appendChild(d);
+  });
+}
+
+function toggleTarget(){
+  targetMode=!targetMode;
+  document.getElementById('targetToggle').classList.toggle('on',targetMode);
+  document.getElementById('pairsSection').style.display=targetMode?'block':'none';
+  if(targetMode)renderPairs();
+  saveData();
+}
+
+function renderPairs(){
+  const c=document.getElementById('pairsContainer');
+  c.innerHTML='';
+  players.forEach((p,i)=>{
+    const others=players.filter((_,j)=>j!==i);
+    const div=document.createElement('div');
+    div.className='pair-card';
+    div.innerHTML=`<div class="pair-name">${p.name} faz desafios com:</div><div class="chips-wrap" id="ch${i}"></div>`;
+    c.appendChild(div);
+    const wrap=div.querySelector(`#ch${i}`);
+    others.forEach(o=>{
+      const chip=document.createElement('div');
+      chip.className='chip'+(p.targets.includes(o.name)?' on':'');
+      chip.textContent=o.name;
+      chip.onclick=()=>{
+        if(p.targets.includes(o.name)){p.targets=p.targets.filter(t=>t!==o.name);chip.classList.remove('on');}
+        else{p.targets.push(o.name);chip.classList.add('on');}
+      };
+      wrap.appendChild(chip);
+    });
+  });
+}
+
+function toggleCustom(){
+  customMode=!customMode;
+  document.getElementById('customToggle').classList.toggle('on',customMode);
+  document.getElementById('customSection').style.display=customMode?'block':'none';
+  saveData();
+}
+
+function addCustomQ(){
+  const type=document.getElementById('customType').value;
+  const text=document.getElementById('customText').value.trim();
+  const timer=parseInt(document.getElementById('customTimer').value);
+  if(!text)return;
+  customQs[type].push({text,timer});
+  document.getElementById('customText').value='';
+  renderCustomList();
+  saveData();
+}
+
+function renderCustomList(){
+  const el=document.getElementById('customList');
+  el.innerHTML='';
+  ['truth','dare'].forEach(type=>{
+    customQs[type].forEach((q,i)=>{
+      const d=document.createElement('div');
+      d.className='custom-item';
+      d.innerHTML=`<div class="type-dot" style="background:${type==='dare'?'var(--accent)':'#0070ff'}"></div><span style="flex:1;color:#ccc;font-size:12px">${q.text.substring(0,55)}${q.text.length>55?'…':''}</span>${q.timer>0?`<span style="color:var(--muted);font-size:10px;margin-right:4px">${q.timer}s</span>`:''}<button class="rm-c" onclick="removeCustom('${type}',${i})">×</button>`;
+      el.appendChild(d);
+    });
+  });
+}
+
+function removeCustom(type,i){customQs[type].splice(i,1);renderCustomList();saveData();}
+
+// ══════════ NAVIGATION ══════════
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function goSetup(){
+  if(spinAnim){cancelAnimationFrame(spinAnim);spinAnim=null;}
+  clearInterval(timerInt);
+  show('setupScreen');
+}
+
+function goSpin(){
+  clearInterval(timerInt);
+  show('gameScreen');
+  document.getElementById('spinView').style.display='flex';
+  document.getElementById('resultPanel').style.display='none';
+  document.getElementById('circleLabel').textContent='JOGAR';
+  document.getElementById('circleSub').textContent='toca para girar';
+}
+
+function goResult(){
+  clearInterval(timerInt);
+  show('gameScreen');
+  document.getElementById('spinView').style.display='none';
+  document.getElementById('resultPanel').style.display='flex';
+  document.getElementById('resultPanel').classList.add('active');
+}
+
+// ══════════ GAME ══════════
+function startGame(){
+  if(players.length<2)return;
+  buildStrip();
+  goSpin();
+}
+
+function buildStrip(){
+  const s=document.getElementById('strip');
+  s.innerHTML='';
+  for(let i=0;i<30;i++){
+    players.forEach(p=>{
+      const c=document.createElement('div');
+      c.className=`spin-chip ${p.color}`;
+      c.textContent=p.name;
+      s.appendChild(c);
+    });
+  }
+}
+
+function resetAll(){
+  if(!confirm('Tens a certeza? Isto apaga todos os jogadores e perguntas guardadas.'))return;
+  players=[];customQs={truth:[],dare:[]};targetMode=false;customMode=false;lastPlayer=null;currentPlayer=null;
+  try{localStorage.removeItem('extremo_players');localStorage.removeItem('extremo_customQs');localStorage.removeItem('extremo_targetMode');localStorage.removeItem('extremo_customMode');}catch(e){}
+  renderPlayers();
+  document.getElementById('playersList').innerHTML='';
+  ['targetCard','customCard','startBar'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('targetToggle').classList.remove('on');
+  document.getElementById('customToggle').classList.remove('on');
+  document.getElementById('pairsSection').style.display='none';
+  document.getElementById('customSection').style.display='none';
+  document.getElementById('customList').innerHTML='';
+  show('setupScreen');
+}
+
+// ══════════ AUDIO ENGINE ══════════
+let audioCtx=null;
+function getAudioCtx(){
+  if(!audioCtx||audioCtx.state==='closed'){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+}
+
+function playTick(){
+  try{
+    const ctx=getAudioCtx();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';o.frequency.value=600;
+    g.gain.setValueAtTime(.18,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.06);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+.06);
+  }catch(e){}
+}
+
+function playWhoosh(){
+  try{
+    const ctx=getAudioCtx();
+    const buf=ctx.createBuffer(1,ctx.sampleRate*.3,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+    const src=ctx.createBufferSource();
+    src.buffer=buf;
+    const f=ctx.createBiquadFilter();
+    f.type='bandpass';f.frequency.value=800;f.Q.value=.5;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(.4,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.3);
+    src.connect(f);f.connect(g);g.connect(ctx.destination);
+    src.start();
+  }catch(e){}
+}
+
+function playReveal(){
+  try{
+    const ctx=getAudioCtx();
+    const notes=[523,659,784,1046];
+    notes.forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.value=freq;
+      const t=ctx.currentTime+i*.12;
+      g.gain.setValueAtTime(.3,t);
+      g.gain.exponentialRampToValueAtTime(.001,t+.25);
+      o.start(t);o.stop(t+.25);
+    });
+  }catch(e){}
+}
+
+function playSlowDown(){
+  try{
+    const ctx=getAudioCtx();
+    [0,.15,.32,.52,.75].forEach((t,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.value=500-i*30;
+      g.gain.setValueAtTime(.2,ctx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.1);
+      o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.15);
+    });
+  }catch(e){}
+}
+
+function spin(){
+  if(spinAnim){cancelAnimationFrame(spinAnim);spinAnim=null;}
+  const circle=document.getElementById('mainCircle');
+  document.getElementById('spinView').style.display='flex';
+  document.getElementById('resultPanel').style.display='none';
+  circle.classList.add('spinning');
+  document.getElementById('circleLabel').textContent='...';
+  document.getElementById('circleSub').textContent='';
+
+  const strip=document.getElementById('strip');
+  let pos=0;
+  let speed=2; // start slow
+  const maxSpeed=28;
+  const totalDuration=3000; // ms
+  const accelTime=600;
+  const decelTime=900;
+  const startTime=performance.now();
+
+  // Tick sounds
+  let lastTickPos=0;
+  const tickInterval=60; // pixels between ticks
+
+  playWhoosh();
+
+  function animate(now){
+    const elapsed=now-startTime;
+    const remaining=totalDuration-elapsed;
+
+    if(elapsed<accelTime){
+      // Accelerate
+      speed=2+(maxSpeed-2)*(elapsed/accelTime);
+    } else if(remaining<decelTime){
+      // Decelerate
+      speed=Math.max(4,maxSpeed*(remaining/decelTime));
+    } else {
+      speed=maxSpeed;
+    }
+
+    pos-=speed;
+    if(pos<=-strip.scrollWidth/2)pos=0;
+    strip.style.transform=`translateX(${pos}px)`;
+
+    // Tick sound during spin
+    if(Math.abs(pos-lastTickPos)>=tickInterval){
+      lastTickPos=pos;
+      if(speed>6)playTick();
+    }
+
+    if(elapsed<totalDuration){
+      spinAnim=requestAnimationFrame(animate);
+    } else {
+      // Stopped
+      spinAnim=null;
+      circle.classList.remove('spinning');
+      playSlowDown();
+
+      let pool=players.filter(p=>p!==lastPlayer);
+      if(!pool.length)pool=players;
+      const chosen=pool[Math.floor(Math.random()*pool.length)];
+      lastPlayer=chosen;currentPlayer=chosen;
+
+      document.getElementById('circleLabel').textContent=chosen.name.toUpperCase();
+      document.getElementById('circleSub').textContent='toca para girar';
+
+      setTimeout(()=>{
+        playReveal();
+        document.getElementById('spinView').style.display='none';
+        const rp=document.getElementById('resultPanel');
+        rp.style.display='flex';rp.classList.add('active');
+        const rn=document.getElementById('resultName');
+        rn.textContent=chosen.name.toUpperCase();
+        rn.style.color=CHEX[chosen.color]||'#fff';
+        setTimeout(()=>speak(`${chosen.name}! Verdade ou Desafio?`),600);
+      },500);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function choose(type){
+  currentType=type;
+  show('questionScreen');
+  loadQuestion(type);
+}
+
+function loadQuestion(type){
+  clearInterval(timerInt);
+  const target=getTarget(currentPlayer);
+  document.getElementById('qBadge').className='q-badge '+(type==='dare'?'b-dare':'b-truth');
+  document.getElementById('qBadge').textContent=type==='dare'?'🔥 DESAFIO':'💬 VERDADE';
+  document.getElementById('qTopTitle').textContent=type==='dare'?'DESAFIO':'VERDADE';
+  document.getElementById('qPname').textContent=currentPlayer.name.toUpperCase();
+  document.getElementById('qPname').style.color=CHEX[currentPlayer.color]||'#fff';
+
+  if(type==='truth'){
+    const mode=getQMode();
+    let pool=[];
+    if(mode==='all'||mode==='bank') pool=[...TRUTHS];
+    if(mode==='all'||mode==='mine') pool=[...pool,...customQs.truth.map(q=>q.text)];
+    if(!pool.length){alert('Não há perguntas disponíveis neste modo!');return;}
+    pool=pool.filter(q=>!(q.includes('[F]')&&currentPlayer.gender!=='F')&&!(q.includes('[M]')&&currentPlayer.gender!=='M'));
+    let q=pool[Math.floor(Math.random()*pool.length)].replace(/\[F\]|\[M\]/g,'').trim();
+    q=fill(q,currentPlayer,target);
+    document.getElementById('qBox').textContent=q;
+    document.getElementById('timerBox').classList.remove('show');
+    timerSecs=0;
+    speak(q);
+  } else {
+    const mode=getQMode();
+    let pool=[];
+    if(mode==='all'||mode==='bank') pool=[...DARES];
+    if(mode==='all'||mode==='mine') pool=[...pool,...customQs.dare.map(q=>q.text+'|'+q.timer)];
+    if(!pool.length){alert('Não há desafios disponíveis neste modo!');return;}
+    pool=pool.filter(q=>!(q.split('|')[0].includes('[F]')&&currentPlayer.gender!=='F')&&!(q.split('|')[0].includes('[M]')&&currentPlayer.gender!=='M'));
+    const raw=pool[Math.floor(Math.random()*pool.length)];
+    const parts=raw.split('|');
+    let q=parts[0].replace(/\[F\]|\[M\]/g,'').trim();
+    q=fill(q,currentPlayer,target);
+    document.getElementById('qBox').textContent=q;
+    timerSecs=parseInt(parts[1]||'0');
+    const tb=document.getElementById('timerBox');
+    const tv=document.getElementById('timerVal');
+    const tbtn=document.getElementById('timerBtn');
+    if(timerSecs>0){
+      tb.classList.add('show');
+      tv.textContent=fmt(timerSecs);
+      tv.classList.remove('warn');
+      tbtn.style.display='block';
+      tbtn.textContent='▶ INICIAR CRONÔMETRO';
+    } else {
+      tb.classList.remove('show');
+    }
+    speak(q);
+  }
+  document.getElementById('questionScreen').querySelector('.q-scroll').scrollTop=0;
+}
+
+function fill(text,player,target){
+  const tname=target?target.name:'o(a) parceiro(a)';
+  return text.replace(/\{alvo\}/g,tname).replace(/\{jogador\}/g,player.name);
+}
+
+function getTarget(player){
+  if(targetMode&&player.targets.length>0){
+    const name=player.targets[Math.floor(Math.random()*player.targets.length)];
+    return players.find(p=>p.name===name)||null;
+  }
+  let pool=players.filter(p=>p!==player&&(player.pref==='A'||player.pref===p.gender));
+  if(!pool.length)pool=players.filter(p=>p!==player);
+  return pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+}
+
+function done(){clearInterval(timerInt);goSpin();}
+function change(){loadQuestion(currentType);}
+
+function startTimer(){
+  document.getElementById('timerBtn').style.display='none';
+  let rem=timerSecs;
+  const v=document.getElementById('timerVal');
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    rem--;
+    v.textContent=fmt(rem);
+    if(rem<=5)v.classList.add('warn');
+    if(rem<=0){
+      clearInterval(timerInt);
+      v.textContent='⏰ TEMPO!';
+      speak('Tempo esgotado!');
+      alarm();
+    }
+  },1000);
+}
+
+function fmt(s){return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;}
+
+function alarm(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,.3,.6,.9].forEach(t=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=880;
+      g.gain.setValueAtTime(.5,ctx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.25);
+      o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);
+    });
+  }catch(e){}
+}
+
+function speak(text){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='pt-BR';u.rate=.95;u.pitch=1.05;u.volume=1;
+  const voices=window.speechSynthesis.getVoices();
+  const v=voices.find(v=>v.lang.startsWith('pt'))||null;
+  if(v)u.voice=v;
+  window.speechSynthesis.speak(u);
+}
+if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+
+// Touch fix for main circle
+const mc=document.getElementById('mainCircle');
+mc.addEventListener('touchstart',function(e){e.preventDefault();spin();},{passive:false});
+mc.addEventListener('click',function(e){spin();});
+
+// ══════════ LOCALSTORAGE ══════════
+function saveData(){
+  try{
+    localStorage.setItem('extremo_players',JSON.stringify(players));
+    localStorage.setItem('extremo_customQs',JSON.stringify(customQs));
+    localStorage.setItem('extremo_targetMode',JSON.stringify(targetMode));
+    localStorage.setItem('extremo_customMode',JSON.stringify(customMode));
+  }catch(e){}
+}
+
+function loadData(){
+  try{
+    const p=localStorage.getItem('extremo_players');
+    const q=localStorage.getItem('extremo_customQs');
+    const t=localStorage.getItem('extremo_targetMode');
+    const c=localStorage.getItem('extremo_customMode');
+    if(p){
+      players=JSON.parse(p);
+      renderPlayers();
+      if(players.length>=2){
+        ['targetCard','customCard','startBar'].forEach(id=>document.getElementById(id).style.display='block');
+      }
+    }
+    if(q){
+      customQs=JSON.parse(q);
+      renderCustomList();
+    }
+    if(t&&JSON.parse(t)){
+      targetMode=true;
+      document.getElementById('targetToggle').classList.add('on');
+      document.getElementById('pairsSection').style.display='block';
+      renderPairs();
+    }
+    if(c&&JSON.parse(c)){
+      customMode=true;
+      document.getElementById('customToggle').classList.add('on');
+      document.getElementById('customSection').style.display='block';
+    }
+  }catch(e){}
+}
+
+loadData();
+
+// ══════════ QUESTION MODE ══════════
+function getQMode(){
+  const r=document.querySelector('input[name="qmode"]:checked');
+  return r?r.value:'all';
+}
+</script>
+</body>
+</html>
